@@ -112,6 +112,17 @@ empty all out_gates,in_gates
    GateOff#  -- turns Gate# off
    GateOn#   -- turns Gate# on
 
+   COPY  copies data
+
+   NOP  no operation
+
+
+ RESULTS and OPERANDS
+   the signals above and
+   Gate Move: GM Move data through gate, here data is just copied
+   Data: D: destination is to the data #
+
+ Please note that all combinations of signals, operands, operators and results are legal
 
  */
 
