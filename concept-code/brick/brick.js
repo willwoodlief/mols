@@ -50,7 +50,7 @@ MOL.active_hookups = [];
 Steps each cycle:
 empty all out_gates,in_gates
 
-NOTE: after all ins for a single signal is run, delete the key to the cache for that signal
+
 
 
 1) for each unit in MOL get all out_gates g that are on and put their namespace (the namespace they are looking for)
@@ -76,7 +76,7 @@ NOTE: after all ins for a single signal is run, delete the key to the cache for 
             add the ins to ins_next
 
  7) If any of these ins change data in their own unit (D1 + D2. result D2)
-     if the unit has an ins for DD2
+     if the unit has an ins for DD2 and DD2 has changed value
      add to that unit   unit.cache['DD2'] = index of data changed (overrite if already set)
      add all ins for this DD2 to ins_next
 
@@ -85,6 +85,34 @@ NOTE: after all ins for a single signal is run, delete the key to the cache for 
  9) Go through all MOL.hookups and see if any of the pair of gates is now off, if so see if each gate's unit
         has a detach signal (GX#), if so unit.cache[GX#] = 1 (create or overrite), remove any cache keys for incoming data
         ; delete unit.cache[GD#].remove hookup info from both gates and the hookup array
+        ; delete GS# from cache
+
+
+
+
+ ------------------------
+ instruction works by : waits on signal : does an operation with up to two registers and then write to a register
+ signals are:
+ Gate Start: GS: when a gate connects
+ Gate Data: GD :when there is data incoming through a gate
+ Gate End: GX : when a gate detaches
+ Data Delta DD : when a data slot changes value
+
+ if there is no DG GS GX or DD in an instructions two operands, then that instruction does not affect or write anything
+
+ instruction notation State,p1 p2 op, result
+ p2 can be missing
+
+ operations:
+   math: + - * / --  %
+   action_logic: AND OR NOT XOR > < >= <= <> ==
+                            -- if logic is false no result is written to, if logic is true result has a 1
+   logic: same as action logic           -- but result is always 0 or 1
+   bitwise: & | ^ ~
+   GateOff#  -- turns Gate# off
+   GateOn#   -- turns Gate# on
+
+
  */
 
 
