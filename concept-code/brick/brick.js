@@ -68,24 +68,22 @@ empty all out_gates,in_gates
 
  5) ADD to each unit's cache the key , 'GS' + gate.id and set it to 1 unit.cache['GS' + gate.id] = 1
 
- 6) EXECUTE all instructions in MOL.ins_next (remove ins from ins_next as we execute them)
 
- 7) If any of these ins move data through a gate (D1 ++ , result GO#)
+
+ 6) If any of these ins move data through a gate (D1 ++ , result GO#)
         if the target unit, that is at the end of the gate hookup, has an ins for GS#,
-            add to that unit   unit.cache[GD#] = data moved (overrite if already set)
+            add to that unit   unit.cache[GD#] = data moved (overwrite if already set)
             add the ins to ins_next
 
  7) If any of these ins change data in their own unit (D1 + D2. result D2)
      if the unit has an ins for DD2 and DD2 has changed value
-     add to that unit   unit.cache['DD2'] = index of data changed (overrite if already set)
+     add to that unit   unit.cache['DD2'] = index of data changed (overwrite if already set)
      add all ins for this DD2 to ins_next
 
  8) EXECUTE ALL ins_next (removing each of the ins as we do it)
 
  9) Go through all MOL.hookups and see if any of the pair of gates is now off, if so see if each gate's unit
-        has a detach signal (GX#), if so unit.cache[GX#] = 1 (create or overrite), remove any cache keys for incoming data
-        ; delete unit.cache[GD#].remove hookup info from both gates and the hookup array
-        ; delete GS# from cache
+        has a detach signal (GX#), if so unit.cache[GX#] = 1 (create or overwrite)
 
 
 
