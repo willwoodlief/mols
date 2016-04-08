@@ -48,19 +48,23 @@ MOL.active_hookups = [];
 
 /*
 Steps each cycle:
-empty all out_gates,in_gates
 
 
 
+0) Go through all MOL.hookups and see if any of the pair of gates is now off, if so see if each gate's unit
+ has a detach signal (GX#), if so unit.cache[GX#] = 1 (create or overwrite)
 
-1) for each unit in MOL get all out_gates g that are on and put their namespace (the namespace they are looking for)
+1)  empty all out_gates
+for each unit in MOL get all out_gates g that are on and put their namespace (the namespace they are looking for)
         as a key into out_gates with a ref to the gate as the value
         MOL.out_gates[g.namespace] = g
 
-2) for each unit in MOL get all in_gates go that are on and put their NS into the hash
+2) Empty all in_gates. For each unit in MOL get all in_gates go that are on and put their NS into the hash
         MOL.in_gates[go.namespace] = go
 
-3) match all outgates to ingates, multiple hookups for one gate is okay. For each pair found,
+3) match all outgates to ingates, multiple hookups for one gate is okay.
+    (for each outgate key see if there is an ingate key)
+    For each pair found,
     make a hash {in_unit: go.unit_id, in_gate:go.id, out_unit:go.unit_id,out_gate:g.id} //avoid cycle ref
      and set each gate's hookup to this, and add to MOL.active_hookups
 
@@ -82,8 +86,7 @@ empty all out_gates,in_gates
 
  8) EXECUTE ALL ins_next (removing each of the ins as we do it)
 
- 9) Go through all MOL.hookups and see if any of the pair of gates is now off, if so see if each gate's unit
-        has a detach signal (GX#), if so unit.cache[GX#] = 1 (create or overwrite)
+
 
 
 
