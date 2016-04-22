@@ -14,6 +14,7 @@ MOL.units = {};  //holds all the units
 MOL.unit = function(id) {
     this.id = id;
     this.instructions = {};
+    this.instructions_by_id = {}; //cross reference hash to directly lookup instruction by id
     this.cache = {};  //the ids for cache, is always the signal
     this.data = {};  //the ids for data 0,1,2,3
     this.gates = {}; //the ids for gates is 0,1,2,3
@@ -23,6 +24,26 @@ MOL.unit = function(id) {
             this.instructions[ins.signal] = [];
         }
         this.instructions[ins.signal].push(ins);
+        this.instructions_by_id[ins.id] = ins;
+    };
+
+    this.remove_ins = function(ins) {
+        var signals = this.instructions[ins.signal];
+
+        var index_to_remove = -1;
+        for(var i =0; i < signals.length; i++) {
+            if (signals[i].id == ins.id) {
+                index_to_remove = i;
+                break;
+            }
+        }
+
+        if (index_to_remove >= 0) {
+            signals.splice(index_to_remove, 1);
+        }
+
+
+        delete this.instructions_by_id[ins.id];
     };
 
     this.add_ins_to_next = function(signal,value) {
@@ -50,15 +71,16 @@ MOL.gate = function(id,unit_id,direction,namespace,power) {
 MOL.instruction = function(id,unit_id,signal,op,oprand1,oprand2,result) {
     this.id = id;
     this.unit_id = unit_id;
-    this.signal = signal;  //signal is like GS-#, GX-#, GD-# DD-#, NOP, DT-# same as DD here
+    this.signal = signal.toUpperCase;  //signal is like GS-#, GX-#, GD-# DD-#, NOP, DT-# same as DD here
      //op is a string which needs to have an entry in MOLS.ops
-    // if op returns null, then nothing is written
-    this.op = op;
-    this.oprand1 = oprand1; //operands as above, DT is the direct value, DD is the signal of value change
-    this.oprand2 = oprand2;
+    // if op returns null, or false then nothing is written
+
+    this.op = op.toUpperCase;
+    this.oprand1 = oprand1.toUpperCase; //operands as above, DT is the direct value, DD is the signal of value change
+    this.oprand2 = oprand2.toUpperCase;
 
     //DT-# to write to data ,GD-# to push through gate (if connected),GS-# or GX-# to turn gate on or off, NOP does nothing
-    this.result = result;
+    this.result = result.toUpperCase;
 
     //returns the result key
     this.execute = function() {
@@ -161,11 +183,11 @@ MOL.step = function() {
             //gates unhook, see if the unit has a detatch signal
 
             //in_gate detach signal
-            var in_detatch_signal = 'GS-' + hookup.in_gate_unit_id;
+            var in_detatch_signal = 'GS-' + hookup.in_gate_id;
             in_unit.add_ins_to_next(in_detatch_signal,1);
 
             //out_gate detach signal
-            var out_detatch_signal = 'GS-' + hookup.out_gate_unit_id;
+            var out_detatch_signal = 'GS-' + hookup.in_gate_id;
             out_unit.add_ins_to_next(out_detatch_signal,1);
         }
     } //end step 1
@@ -272,11 +294,31 @@ MOL.step = function() {
 INS = {};
 // add returns null if one of them is null (experimental)
 INS.add = function(a,b) { if (a === null || b=== null) {return null;} return a +b;};
-MOL.op['add'] = {fp:INS.add, b_result:true};
+MOL.op['ADD'] = {fp:INS.add, b_result:true};
+
+INS.NOP = function(a,b) { /* does nothing */};
+MOL.op['NOP'] = {fp:INS.NOP, b_result:false};
 
 //only write to the result if oprand1 > oprand2
-INS['action>'] = function(a,b) { if (a === null || b=== null) {return null;} return a > b; };
-MOL.op['action>'] = {fp:INS['action>'], b_result:false};
+INS['ACTION>'] = function(a,b) { if (a === null || b=== null) {return null;} return a > b; };
+MOL.op['ACTION>'] = {fp:INS['action>'], b_result:false};
+
+
+MOL.is_valid_instruction_pattern = function(what) {
+    //GS-#, GX-#, GD-# DD-#, NOP, DT-# same as DD
+    var prefix = what.slice(0,2).toUpperCase;
+    switch (prefix) {
+        case 'GS-':
+        case 'GX-':
+        case 'GD-':
+        case 'DD-':
+        case 'NOP':
+        case 'DT-':
+            return true;
+
+        default:    return false;
+    }
+};
 
 /*
  ------------------------

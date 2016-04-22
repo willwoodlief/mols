@@ -71,3 +71,49 @@ body {
     width: 400px;
     background-color: seagreen;
 }
+
+.step-button {
+    position: absolute;
+    left: 100px;
+    top:600px;
+    height: 70px;
+    width: 200px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    border: 2px solid #3866A3;
+    font-weight: bold;
+    font-size: 30px;
+    color: #36454F;
+}
+
+.editor {
+    position: absolute;
+    left: 700px;
+    top:600px;
+    height: 100px;
+    width: 300px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    border: 2px solid #3866A3;
+    color: #36454F;
+    background-color: #D6D6D6;
+}
+
+.editor input {
+    position: absolute;
+    top:50px;
+    left: 25px;
+    width: 250px;
+}
+
+.editor .what-is-edited {
+    position: absolute;
+    top:25px;
+    left: 25px;
+    width: 250px;
+    background-color: #aaaaaa;
+    color: black;
+    text-align: center;
+}
