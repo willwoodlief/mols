@@ -4,11 +4,12 @@
 
 var MOLG = {};
 /*
-edit string :
-    Unit ID, major command, type, other
+edit string : (unit,type,command)
+    Unit ID,  type, [optional id],major command, other
     UNIT ID: numerical id or NEW
+     type: gate,instruction,data  (GID)
     command: E = edit , + = add, - = delete
-    type: gate,instruction,data  (GID)
+
 comma delimited, start with G I d
  input strings to edit a part,
  GATE: direction , namespace, power
@@ -16,6 +17,8 @@ comma delimited, start with G I d
  DATA: value
  */
 
+// order of expected params to: unit_id,type,item_id,edit action where item id is optional
+//then take rest of remaining elements, make new array with item_id as first (if its there)
 MOLG.edit_unit = function (edit_string) {
     //split edit string
     var edit_array = edit_string.split(',');
@@ -27,23 +30,34 @@ MOLG.edit_unit = function (edit_string) {
     }
     if (!(unit_id in MOL.units) ) {throw "id not found in units";}
 
-    var command = edit_array[1];
-    var type = edit_array[2];
+    var type = edit_array[1];
+    if (parseInt(edit_array[2]) == NaN)  {
+        //then index 2 is a command
+        var command = edit_array[2];
+        var other_info = edit_array.slice(3);
+    } else {
+        var c_id = edit_array[2];
+        command = edit_array[3];
+        var other_info = edit_array.slice(3);
+        other_info.unshift(c_id);
+    }
+
+
     switch (command) {
         case 'E':
         case 'e':
             switch (type) {
                 case 'g':
                 case 'G':
-                    MOLG.edit_gate(unit_id,edit_array.slice(3));
+                    MOLG.edit_gate(unit_id,other_info.slice(3));
                     break;
                 case 'i':
                 case 'I':
-                    MOLG.edit_instruction(unit_id,edit_array.slice(3));
+                    MOLG.edit_instruction(unit_id,other_info.slice(3));
                     break;
                 case 'd':
                 case 'D':
-                    MOLG.edit_data(unit_id,edit_array.slice(3));
+                    MOLG.edit_data(unit_id,other_info.slice(3));
                     break;
                 default: throw "unknown type: " + type;
 
@@ -55,15 +69,15 @@ MOLG.edit_unit = function (edit_string) {
             switch (type) {
                 case 'g':
                 case 'G':
-                    MOLG.new_gate(unit_id,edit_array.slice(3));
+                    MOLG.new_gate(unit_id,other_info.slice(3));
                     break;
                 case 'i':
                 case 'I':
-                    MOLG.new_instruction(unit_id,edit_array.slice(3));
+                    MOLG.new_instruction(unit_id,other_info.slice(3));
                     break;
                 case 'd':
                 case 'D':
-                     MOLG.new_data(unit_id,edit_array.slice(3));
+                     MOLG.new_data(unit_id,other_info.slice(3));
                      break;
                 default: throw "unknown type: " + type;
             }
@@ -73,15 +87,15 @@ MOLG.edit_unit = function (edit_string) {
             switch (type) {
                 case 'g':
                 case 'G':
-                    MOLG.delete_gate(unit_id,edit_array.slice(3));
+                    MOLG.delete_gate(unit_id,other_info.slice(3));
                     break;
                 case 'i':
                 case 'I':
-                    MOLG.delete_instruction(unit_id,edit_array.slice(3));
+                    MOLG.delete_instruction(unit_id,other_info.slice(3));
                     break;
                 case 'd':
                 case 'D':
-                     MOLG.delete_data(unit_id,edit_array.slice(3));
+                     MOLG.delete_data(unit_id,other_info.slice(3));
                     break;
                 default: throw "unknown type: " + type;
             }

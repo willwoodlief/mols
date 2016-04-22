@@ -1,5 +1,6 @@
 
 
+var ss_prefix = ''; //when clicking on the brick parts, they will set this to have 'unit_id,type,id'
 
 $(function() {
 
@@ -18,8 +19,31 @@ $(function() {
         }
     });
 
+
+    $('#edit-here').keydown(function(e) {
+        if (e.keyCode == 13) {
+            e.preventDefault();
+            var ss = $('#edit-here').val();
+            var s = ss_prefix + ',' + ss;
+            var unit_changed = MOLG.edit_unit(s);
+            pairBrick(bricks[unit_changed],MOL.units[unit_changed]);
+            $('#edit-here').val('');
+        }
+
+    });
+
     //$('.first .gate_house').css("background-color",'blue');
 });
+
+//called by the brick on click handlers using the data associated with the elements inside brick
+function setPrefix(unit_id,type,item_id) {
+
+    var arr = [];
+    if (unit_id != null) {arr.push(unit_id);}
+    if (type != null) {arr.push(type);}
+    if (item_id != null) {arr.push(item_id);}
+    ss_prefix = arr.join();
+}
 
 //sets up the data associations and click handlers
 //and creating elements to show each of the unit's parts
