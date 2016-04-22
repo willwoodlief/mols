@@ -2,17 +2,45 @@
 
 
 $(function() {
-    MOL.units[0] = new MOL.unit(0);
-    MOL.units[0].gates[0] = new MOL.gate(0,0,1,'testy ns',true);
-    MOL.units[0].add_ins( new MOL.instruction(0,0,'DS-0','add','DT-1','GD-4','GS-1'));
 
 
-    makeBrick('first');
-    makeBrick('second');
-    makeBrick('third');
+    var bricks = ['first','second','third'];
+    for(var i = 0; i < bricks.length; i++) {
+        makeBrick(bricks[i]);
+        var unit = MOLG.edit_unit('NEW');
+        pairBrick(bricks[i],unit);
+    }
 
-    $('.first .gate_house').css("background-color",'blue');
+    $('.step-button').click(function() {
+        MOL.step();
+        for(var i = 0; i < bricks.length; i++) {
+            pairBrick(bricks[i],MOL.units[i]); //units have same index as the brick, as they start from 0 and go up
+        }
+    });
+
+    //$('.first .gate_house').css("background-color",'blue');
 });
+
+//sets up the data associations and click handlers
+//and creating elements to show each of the unit's parts
+//also highlights the next instructions to be run the next time, in the unit
+function pairBrick(parent_class,unit) {
+    clearBrick(parent_class);
+    fillBrick(parent_class,unit);
+    showNextInstructions(parent_class,unit);
+}
+
+function clearBrick(parent_class) {
+
+}
+
+function fillBrick(parent_class,unit) {
+
+}
+
+function showNextInstructions(parent_class,unit) {
+
+}
 
 //create the brick on screen given an x and y
 function makeBrick(parent_class) {

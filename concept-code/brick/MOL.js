@@ -169,6 +169,17 @@ MOL.get_number_from_code = function(thingee) {
 };
 
 MOL.step = function() {
+
+
+    //make copy of instructions to execute
+    var ins_copy = MOL.ins_next;
+    MOL.ins_next = [] ; //clear instructions for any new that might be coming in
+    for (var ins_index = 0; ins_index < ins_copy.length; ins_index++) {
+        var ins = ins_copy[ins_index];
+        ins.execute();
+    }  //8 and 9 done by execute
+
+
     //1) Go through all MOL.hookups and see if any of the pair of gates is now off, if so see if each gate's unit
     //has a detach signal (GX#), if so unit.cache[GX#] = 1 (create or overwrite)
     for(var i =0; i < MOL.active_hookups.length; i++) {
@@ -277,10 +288,7 @@ MOL.step = function() {
 
      */
 
-    for (var ins_index = 0; ins_index < MOL.ins_next.length; ins_index++) {
-        var ins = MOL.ins_next[ins_index];
-        ins.execute();
-    }  //8 and 9 done by execute
+
 
 
 
