@@ -7,7 +7,7 @@ var MOLG = {};
 edit string : (unit,type,command)
     Unit ID,  type, [optional id],major command, other
     UNIT ID: numerical id or NEW
-     type: gate,instruction,data  (GID)
+     type: gate,instruction,data ,cache (GIDC)
     command: E = edit , + = add, - = delete
 
 comma delimited, start with G I d
@@ -31,14 +31,15 @@ MOLG.edit_unit = function (edit_string) {
     if (!(unit_id in MOL.units) ) {throw "id not found in units";}
 
     var type = edit_array[1];
-    if (parseInt(edit_array[2]) == NaN)  {
+    var other_info = null;
+    if (isNaN(parseInt(edit_array[2])) )  {
         //then index 2 is a command
         var command = edit_array[2];
-        var other_info = edit_array.slice(3);
+         other_info = edit_array.slice(3);
     } else {
         var c_id = edit_array[2];
         command = edit_array[3];
-        var other_info = edit_array.slice(3);
+         other_info = edit_array.slice(3);
         other_info.unshift(c_id);
     }
 
@@ -58,6 +59,10 @@ MOLG.edit_unit = function (edit_string) {
                 case 'd':
                 case 'D':
                     MOLG.edit_data(unit_id,other_info.slice(3));
+                    break;
+                case 'c':
+                case 'C':
+                    MOLG.edit_cache(unit_id,other_info.slice(3));
                     break;
                 default: throw "unknown type: " + type;
 
@@ -79,6 +84,10 @@ MOLG.edit_unit = function (edit_string) {
                 case 'D':
                      MOLG.new_data(unit_id,other_info.slice(3));
                      break;
+                case 'c':
+                case 'C':
+                    MOLG.new_cache(unit_id,other_info.slice(3));
+                    break;
                 default: throw "unknown type: " + type;
             }
             break;
@@ -96,6 +105,10 @@ MOLG.edit_unit = function (edit_string) {
                 case 'd':
                 case 'D':
                      MOLG.delete_data(unit_id,other_info.slice(3));
+                    break;
+                case 'c':
+                case 'C':
+                    MOLG.delete_cache(unit_id,other_info.slice(3));
                     break;
                 default: throw "unknown type: " + type;
             }
@@ -225,14 +238,14 @@ MOLG.delete_instruction = function (unit_id,params) {
 MOLG.new_data = function (unit_id,params) {
     if (params.length != 1) {throw "need data"}
     var data_id = Object.keys( MOL.units[unit_id].data).length;
-    MOL.units[unit_id].data[data_id] = params[0];
+    MOL.units[unit_id].data[data_id] = parseFloat(params[0]);
 };
 
 MOLG.edit_data = function (unit_id,params) {
     if (params.length != 2) {throw "need data id, data"}
     var data_id = params[0];
     if (!(data_id in MOL.units[unit_id].data)) {throw "data id invalid for unit, data id given was: " + data_id}
-    MOL.units[unit_id].data[data_id] = params[1];
+    MOL.units[unit_id].data[data_id] = parseFloat(params[1]);
 };
 
 
@@ -241,6 +254,32 @@ MOLG.delete_data = function (unit_id,params) {
     var data_id = params[0];
     if (!(data_id in MOL.units[unit_id].data)) {throw "data id invalid for unit, data id given was: " + data_id}
     delete MOL.units[unit_id].data[data_id];
+};
+
+
+MOLG.new_cache = function (unit_id,params) {
+    if (params.length != 2) {throw "need cache id,data"}
+    var cache_id = params[0];
+    if (!MOL.is_valid_instruction_pattern(cache_id))  {throw "cache id is not valid: " + cache_id;}
+    MOL.units[unit_id].cache[cache_id] = parseFloat(params[1]);
+};
+
+MOLG.edit_cache = function (unit_id,params) {
+
+    if (params.length != 2) {throw "need cache id,data"}
+    var cache_id = params[0];
+    if (!MOL.is_valid_instruction_pattern(cache_id))  {throw "cache id is not valid: " + cache_id;}
+    if (!(cache_id in MOL.units[unit_id].cache)) {throw "cache id was not already in cache for editing: " + cache_id}
+    MOL.units[unit_id].cache[cache_id] = parseFloat(params[1]);
+
+};
+
+
+MOLG.delete_cache = function (unit_id,params) {
+    if (params.length != 1) {throw "need cache id"}
+    var cache_id = params[0];
+    if (!(cache_id in MOL.units[unit_id].cache)) {throw "cache id was not already in cache for editing: " + cache_id}
+    delete MOL.units[unit_id].cache[cache_id];
 };
 
 

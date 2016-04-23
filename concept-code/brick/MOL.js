@@ -302,7 +302,8 @@ MOL.step = function() {
 INS = {};
 // add returns null if one of them is null (experimental)
 INS.add = function(a,b) { if (a === null || b=== null) {return null;} return a +b;};
-MOL.op['ADD'] = {fp:INS.add, b_result:true};
+MOL.op = {};
+MOL.op['ADD'] = {fp: INS.add, b_result:true};
 
 INS.NOP = function(a,b) { /* does nothing */};
 MOL.op['NOP'] = {fp:INS.NOP, b_result:false};
