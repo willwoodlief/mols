@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
    <title>Mol start</title>
     <link rel="stylesheet" href="brick.css">
+    <link rel="stylesheet" href="../shared_libs/jquery-ui-1.11.4/jquery-ui.min.css">
     <script src="../shared_libs/jquery-2.2.3.min.js"></script>
+    <script src="../shared_libs/jquery-ui-1.11.4/jquery-ui.min.js"></script>
     <script src="MOL.js"></script>
     <script src="mol_generate.js"></script>
     <script src="brick.js"></script>
+    <script src="imp_exp_stuff.js"></script>
 
 </head>
 
@@ -20,7 +23,19 @@
 <button class="step-button">Step</button>
 <div class="editor">
     <span id="what-is-edited" class="what-is-edited">What is being edited</span>
-    <input id='edit-here' type="text">
+    <input id='edit-here' type="text" title="Enter data here">
+</div>
+
+<button class="import-export">Transfer</button>
+
+<div id="imp-exp-dialog-form" title="Import/Export Data">
+
+    <form>
+        <fieldset>
+            <label for="imp_exp_txt">Import or Export</label>
+            <textarea  rows="30" cols="80" name="imp_exp_txt" id="imp_exp_txt" class="text ui-widget-content ui-corner-all"></textarea>
+        </fieldset>
+    </form>
 </div>
 
 </body>

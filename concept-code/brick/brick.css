@@ -38,7 +38,17 @@ body {
     position: absolute;
     top: 300px;
     left: 2px;
-    width: 392px;
+    width: 195px;
+    height: 200px;
+}
+
+.cache {
+    background-color: orangered;
+    border: solid 2px gray;
+    position: absolute;
+    top: 300px;
+    left: 198px;
+    width: 196px;
     height: 200px;
 }
 
@@ -75,7 +85,7 @@ body {
 .step-button {
     position: absolute;
     left: 100px;
-    top:600px;
+    top:550px;
     height: 70px;
     width: 200px;
     -moz-border-radius: 10px;
@@ -87,12 +97,35 @@ body {
     color: #36454F;
 }
 
+.import-export {
+    position: absolute;
+    left: 1000px;
+    top:550px;
+    height: 70px;
+    width: 200px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    border: 2px solid #3866A3;
+    font-weight: bold;
+    font-size: 30px;
+    color: #36454F;
+}
+
+#imp_exp_txt {
+    background-color: lightblue;
+}
+
+#imp-exp-dialog-form {
+    display: none;
+}
+
 .editor {
     position: absolute;
-    left: 700px;
-    top:600px;
+    left: 400px;
+    top:550px;
     height: 100px;
-    width: 300px;
+    width: 400px;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     border-radius: 10px;
@@ -105,21 +138,22 @@ body {
     position: absolute;
     top:50px;
     left: 25px;
-    width: 250px;
+    width: 350px;
 }
 
 .editor .what-is-edited {
     position: absolute;
     top:25px;
     left: 25px;
-    width: 250px;
+    width: 350px;
     background-color: #aaaaaa;
     color: black;
     text-align: center;
 }
 
 .dirn {
-
+    text-align: center;
+    padding-top: 5px;
 }
 
 .hookups {
@@ -127,5 +161,17 @@ body {
 }
 
 .instruction-list {
+
+}
+
+.instruction-item {
+
+}
+
+.data-list {
+
+}
+
+.data-item {
 
 }

@@ -39,30 +39,31 @@ MOLG.edit_unit = function (edit_string) {
     } else {
         var c_id = edit_array[2];
         command = edit_array[3];
-         other_info = edit_array.slice(3);
+         other_info = edit_array.slice(4);
         other_info.unshift(c_id);
     }
 
-
+    command = command.trim();
+    type = type.trim();
     switch (command) {
         case 'E':
         case 'e':
             switch (type) {
                 case 'g':
                 case 'G':
-                    MOLG.edit_gate(unit_id,other_info.slice(3));
+                    MOLG.edit_gate(unit_id,other_info);
                     break;
                 case 'i':
                 case 'I':
-                    MOLG.edit_instruction(unit_id,other_info.slice(3));
+                    MOLG.edit_instruction(unit_id,other_info);
                     break;
                 case 'd':
                 case 'D':
-                    MOLG.edit_data(unit_id,other_info.slice(3));
+                    MOLG.edit_data(unit_id,other_info);
                     break;
                 case 'c':
                 case 'C':
-                    MOLG.edit_cache(unit_id,other_info.slice(3));
+                    MOLG.edit_cache(unit_id,other_info);
                     break;
                 default: throw "unknown type: " + type;
 
@@ -74,19 +75,19 @@ MOLG.edit_unit = function (edit_string) {
             switch (type) {
                 case 'g':
                 case 'G':
-                    MOLG.new_gate(unit_id,other_info.slice(3));
+                    MOLG.new_gate(unit_id,other_info);
                     break;
                 case 'i':
                 case 'I':
-                    MOLG.new_instruction(unit_id,other_info.slice(3));
+                    MOLG.new_instruction(unit_id,other_info);
                     break;
                 case 'd':
                 case 'D':
-                     MOLG.new_data(unit_id,other_info.slice(3));
+                     MOLG.new_data(unit_id,other_info);
                      break;
                 case 'c':
                 case 'C':
-                    MOLG.new_cache(unit_id,other_info.slice(3));
+                    MOLG.new_cache(unit_id,other_info);
                     break;
                 default: throw "unknown type: " + type;
             }
@@ -96,26 +97,26 @@ MOLG.edit_unit = function (edit_string) {
             switch (type) {
                 case 'g':
                 case 'G':
-                    MOLG.delete_gate(unit_id,other_info.slice(3));
+                    MOLG.delete_gate(unit_id,other_info);
                     break;
                 case 'i':
                 case 'I':
-                    MOLG.delete_instruction(unit_id,other_info.slice(3));
+                    MOLG.delete_instruction(unit_id,other_info);
                     break;
                 case 'd':
                 case 'D':
-                     MOLG.delete_data(unit_id,other_info.slice(3));
+                     MOLG.delete_data(unit_id,other_info);
                     break;
                 case 'c':
                 case 'C':
-                    MOLG.delete_cache(unit_id,other_info.slice(3));
+                    MOLG.delete_cache(unit_id,other_info);
                     break;
                 default: throw "unknown type: " + type;
             }
             break;
 
         default:
-            throw "Unknown command";
+            throw "Unknown command: " + command;
 
 
     }
@@ -136,7 +137,7 @@ MOLG.new_gate = function (unit_id,params) {
     if (direction_input < 0) { direction = -1;}
 
     var namespace = params[1];
-    var power =  params[2].match(/^(true|yes|t|y|1)$/i);
+    var power =  params[2].match(/^(true|yes|t|y|1)$/i)? true : false;
     MOL.units[unit_id].gates[gate_id] = new MOL.gate(gate_id,unit_id,direction,namespace,power);
 };
 
@@ -146,13 +147,11 @@ MOLG.edit_gate = function (unit_id,params) {
     if (!(gate_id in MOL.units[unit_id].gates)) {throw "gate id invalid for unit, gate given was: " + gate_id}
     var gate = MOL.units[unit_id].gates[gate_id];
 
-    var direction_input = parseInt(params[1]);
-    if (direction_input == 0) {throw 'direction must be +- 1'}
-    var direction = 1;
-    if (direction_input < 0) { direction = -1;}
+    var direction =   params[1].match(/^(off|in|i|inwards|false|0|-1)$/i) ? -1 : 1;
 
     var namespace = params[2];
-    var power =  params[3].match(/^(true|yes|t|y|1)$/i);
+
+    var power =  params[3].match(/^(true|yes|t|y|1|on|power)$/i) ? true : false;
 
     gate.direction = direction;
     gate.namespace = namespace;

@@ -1,37 +1,119 @@
 
-
+var bricks = ['first','second','third'];
 var ss_prefix = ''; //when clicking on the brick parts, they will set this to have 'unit_id,type,id'
+var command_buffer = [];
+var command_buffer_pointer = -1;
 var COLORS = {};
 COLORS.gate_on = '#eeeeee';
 COLORS.gate_off = '#888888';
 
+//returns json of all all data, as well as saving to local storge
+function save_all() {
+    var t = {
+        mol_save: MOL.get_export_data(),
+        ss_prefix: ss_prefix,
+        command_buffer: command_buffer,
+        command_buffer_pointer: command_buffer_pointer,
+        data_entry_value: $('#edit-here').val()
+    };
+
+    var js = JSON.stringify(t);
+    localStorage.setItem( 'save_all', js );
+    return js;
+}
+
+//restores from input, or if input is null, then just local storage
+function restore_all(input) {
+    var t = {};
+    if (input) {
+        t = JSON.parse(input);
+    } else {
+        var runs = localStorage.getItem( 'save_all');
+        if (runs) {
+            t= JSON.parse(runs);
+        } else {
+            return;
+        }
+
+    }
+    MOL.restore_from_data( t.mol_save);
+    ss_prefix = t.ss_prefix;
+    command_buffer = t.command_buffer;
+    command_buffer_pointer = t.command_buffer_pointer;
+    $('#edit-here').val( t.data_entry_value);
+    refresh_gui();
+
+}
+
+function refresh_gui() {
+    for(var i = 0; i < bricks.length; i++) {
+        pairBrick(bricks[i],MOL.units[i]); //units have same index as the brick, as they start from 0 and go up
+    }
+}
+
 $(function() {
 
 
-    var bricks = ['first','second','third'];
+
     for(var i = 0; i < bricks.length; i++) {
         makeBrick(bricks[i]);
         var unit = MOLG.edit_unit('NEW');
         pairBrick(bricks[i],unit);
     }
+    restore_all();
 
     $('.step-button').click(function() {
         MOL.step();
         for(var i = 0; i < bricks.length; i++) {
             pairBrick(bricks[i],MOL.units[i]); //units have same index as the brick, as they start from 0 and go up
         }
+        save_all();
     });
 
 
     $('#edit-here').keydown(function(e) {
-        if (e.keyCode == 13) {
+        var edit_here = $('#edit-here');
+
+
+        if (e.keyCode == 38) {  //up arrow
+            if (command_buffer_pointer > 0) {command_buffer_pointer--; }
+
+            if (command_buffer_pointer >=0 && command_buffer_pointer < command_buffer.length) {
+                edit_here.val(command_buffer[command_buffer_pointer]);
+            } else {
+                edit_here.val('');
+                command_buffer_pointer = (command_buffer.length > 0)? 0 : -1;
+            }
             e.preventDefault();
-            var edit_here = $('#edit-here');
-            var ss = edit_here.val();
-            var s = ss_prefix + ',' + ss;
-            var unit_changed = MOLG.edit_unit(s);
-            pairBrick(bricks[unit_changed],MOL.units[unit_changed]);
+        }
+        else if (e.keyCode == 40 ) {  //down arrow
+            if (command_buffer_pointer < command_buffer.length) {command_buffer_pointer++; }
+
+            if (command_buffer_pointer >=0 && command_buffer_pointer < command_buffer.length) {
+                edit_here.val(command_buffer[command_buffer_pointer]);
+            } else {
+                edit_here.val('');
+                command_buffer_pointer = (command_buffer.length > 0)? command_buffer.length -1 : -1;
+            }
+            e.preventDefault();
+        }
+        else if (e.keyCode == 13) { //return
+            try {
+                e.preventDefault();
+                var ss = edit_here.val();
+                var s = ss_prefix + ',' + ss;
+                command_buffer.push(s);
+                command_buffer_pointer = command_buffer.length ;
+
+
+            } catch (e) {
+                alert(e);
+            }
+            refresh_gui();
+
+            save_all();
             edit_here.val('');
+            return false;
         }
 
     });
@@ -183,12 +265,11 @@ function fillInstructions(parent_class,unit){
     var ins_event = [];
     var ins_string = '';
     for(var i in unit.instructions) {
-        ins_string += '[' + i + '] ';
-        var event = unit.instructions;
+        var event = unit.instructions[i];
         for(var k =0; k < event.length; k ++) {
             var ins = event[k];
             //id, unit_id,signal,op,oprand1,oprand2,result
-            ins_string += ins.id + ', ' + ins.signal + ', ' + ins.op + ', ' + ins.oprand1 + ', ' + ins.oprand2 + ', ' + ins.result ;
+            ins_string = '[' + i + '] ' + ins.id + ', ' + ins.signal + ', ' + ins.op + ', ' + ins.oprand1 + ', ' + ins.oprand2 + ', ' + ins.result ;
             ins_array.push(ins_string);
             ins_ids.push(ins.id);
             ins_event.push(ins.signal);
@@ -208,8 +289,8 @@ function fillInstructions(parent_class,unit){
         for(var j =0;j < ins_array.length;j++ ) {
             var what = ins_array[j];
             var what_id = ins_ids[j];
-            $("<ul/>",{
-                "class" : "instruction-list",
+            $("<li/>",{
+                "class" : "instruction-item",
                 // .. you can go on and add properties
                 "css" : {
 
@@ -219,6 +300,7 @@ function fillInstructions(parent_class,unit){
                         return function () {
                             setPrefix(w_unit_id,'I',the_id);
                             setTitle('[' + w_unit_id + '] ' + description );
+                            return false;
                         };
                     }(unit.id,what_id,what)
 
@@ -232,11 +314,119 @@ function fillInstructions(parent_class,unit){
 }
 
 function fillData(parent_class,unit){
+    var data_gui = $('.' + parent_class +' .storage');
+    data_gui.off("click");
+    data_gui.html('');
 
+    data_gui.click(function() {
+        setPrefix(unit.id,'D',null);
+        setTitle('[' + unit.id + '] Data Set' );
+    });
+
+
+    var ins_array = [];
+    var ins_ids = [];
+
+    for(var i in unit.data) {
+        var ins_string = 'data[' + i + '] ';
+        var data = unit.data[i];
+        ins_string += ' = ' +  data;
+        ins_array.push(ins_string);
+        ins_ids.push(i);
+    }
+
+    if (ins_array.length > 0) {
+        $("<ul/>",{
+            "class" : "data-list",
+            // .. you can go on and add properties
+            "css" : {
+
+            }
+        }).appendTo(data_gui);
+
+
+        for(var j =0;j < ins_array.length;j++ ) {
+            var what = ins_array[j];
+            var what_id = ins_ids[j];
+            $("<li/>",{
+                "class" : "data-item",
+                // .. you can go on and add properties
+                "css" : {
+
+                },
+                "html" : what,
+                "click" :  function (w_unit_id,the_id,description) {
+                    return function () {
+                        setPrefix(w_unit_id,'D',the_id);
+                        setTitle('[' + w_unit_id + '] ' + description );
+                        return false;
+                    };
+                }(unit.id,what_id,what)
+
+
+
+            }).appendTo(data_gui.find('ul')[0]);
+
+        }
+    }
 }
 
 function fillCache(parent_class,unit){
+    var cache_gui = $('.' + parent_class +' .cache');
+    cache_gui.off("click");
+    cache_gui.html('');
 
+    cache_gui.click(function() {
+        setPrefix(unit.id,'C',null);
+        setTitle('[' + unit.id + '] Cache Slot' );
+    });
+
+
+    var ins_array = [];
+    var ins_ids = [];
+
+    for(var i in unit.cache) {
+        var ins_string = 'cache[' + i + '] ';
+        var data = unit.cache[i];
+        ins_string += ' = ' +  data;
+        ins_array.push(ins_string);
+        ins_ids.push(i);
+    }
+
+    if (ins_array.length > 0) {
+        $("<ul/>",{
+            "class" : "cache-list",
+            // .. you can go on and add properties
+            "css" : {
+
+            }
+        }).appendTo(cache_gui);
+
+
+        for(var j =0;j < ins_array.length;j++ ) {
+            var what = ins_array[j];
+            var what_id = ins_ids[j];
+            $("<li/>",{
+                "class" : "cache-item",
+                // .. you can go on and add properties
+                "css" : {
+
+                },
+                "html" : what,
+                "click" :  function (w_unit_id,the_id,description) {
+                    return function () {
+                        setPrefix(w_unit_id,'C',the_id);
+                        setTitle('[' + w_unit_id + '] ' + description );
+                        return false;
+                    };
+                }(unit.id,what_id,what)
+
+
+
+            }).appendTo(cache_gui.find('ul')[0]);
+
+        }
+    }
 }
 
 //create the brick on screen given an x and y
@@ -274,6 +464,14 @@ function makeBrick(parent_class) {
 
     $("<div/>",{
         "class" : "storage",
+        // .. you can go on and add properties
+        "css" : {
+            "color" : "black"
+        }
+    }).appendTo("."+parent_class);
+
+    $("<div/>",{
+        "class" : "cache",
         // .. you can go on and add properties
         "css" : {
             "color" : "black"

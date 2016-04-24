@@ -71,16 +71,16 @@ MOL.gate = function(id,unit_id,direction,namespace,power) {
 MOL.instruction = function(id,unit_id,signal,op,oprand1,oprand2,result) {
     this.id = id;
     this.unit_id = unit_id;
-    this.signal = signal.toUpperCase;  //signal is like GS-#, GX-#, GD-# DD-#, NOP, DT-# same as DD here
+    this.signal = signal.toUpperCase();  //signal is like GS-#, GX-#, GD-# DD-#, NOP, DT-# same as DD here
      //op is a string which needs to have an entry in MOLS.ops
     // if op returns null, or false then nothing is written
 
-    this.op = op.toUpperCase;
-    this.oprand1 = oprand1.toUpperCase; //operands as above, DT is the direct value, DD is the signal of value change
-    this.oprand2 = oprand2.toUpperCase;
+    this.op = op.toUpperCase();
+    this.oprand1 = oprand1.toUpperCase(); //operands as above, DT is the direct value, DD is the signal of value change
+    this.oprand2 = oprand2.toUpperCase();
 
     //DT-# to write to data ,GD-# to push through gate (if connected),GS-# or GX-# to turn gate on or off, NOP does nothing
-    this.result = result.toUpperCase;
+    this.result = result.toUpperCase();
 
     //returns the result key
     this.execute = function() {
@@ -149,6 +149,56 @@ MOL.out_gates = {};
 MOL.in_gates = {};
 MOL.ins_next = [];
 MOL.active_hookups = [];
+
+MOL.get_export_data = function() {
+  return {
+      mol_units: MOL.units,
+      mol_out_gates: MOL.out_gates,
+      mol_in_gates: MOL.in_gates ,
+      mol_ins_next: MOL.ins_next,
+      mol_active_hookups: MOL.active_hookups
+  };
+};
+
+MOL.restore_from_data = function(data) {
+    MOL.units = {};
+    for( var k in data.mol_units ) {
+        var data_unit = data.mol_units[k];
+        MOL.units[k]  = new MOL.unit(data_unit.id);
+        MOL.units[k].data =  data_unit.data;
+        MOL.units[k].cache = data_unit.cache;
+        //gates
+        for(var h in data_unit.gates) {
+            var copy_gate = data_unit.gates[h];
+            MOL.units[k].gates[copy_gate.id] = new MOL.gate(copy_gate.id,k,
+                                                            copy_gate.direction,copy_gate.namespace,copy_gate.power);
+        }
+
+        //instructions
+        for(var i in data_unit.instructions_by_id) {
+            var copy_ins = data_unit.instructions_by_id[i];
+            MOL.units[k].add_ins( new MOL.instruction(copy_ins,id,k,
+                copy_ins.signal,copy_ins.op,copy_ins.oprand1,copy_ins.oprand2,copy_ins.result));
+        }
+
+
+    }
+
+    MOL.out_gates = data.mol_out_gates;
+    MOL.in_gates = data.mol_in_gates;
+
+    MOL.active_hookups = data.mol_active_hookups;
+
+    //instructions next
+    MOL.ins_next =[];
+    for(var x =0; x < data.mol_ins_next.length;x++) {
+        var i_n = data.mol_ins_next[x];
+        var i_n_unit_id = i_n.unit_id;
+        var i_n_ins_id = i_n.id;
+        var found_ins = MOL.units[i_n_unit_id].instructions_by_id[i_n_ins_id];
+        MOL.ins_next.push(found_ins);
+    }
+};
 
 //returns last one or two characters if they are a number
 MOL.get_number_from_code = function(thingee) {
